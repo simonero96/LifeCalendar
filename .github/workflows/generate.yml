@@ -1,1 +1,55 @@
-name: Test
+name: Generate Life Calendar Wallpaper
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"  # ogni lunedì alle 05:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run wallpaper generator
+        run: python wallpaper.py
+
+      - name: Commit updated wallpaper
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update wallpaper for current week"
+          file_pattern: output/wallpaper.png
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: output
+
+  deploy:
+    needs: generate
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
