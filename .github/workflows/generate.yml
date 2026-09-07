@@ -2,7 +2,7 @@ name: Generate Life Calendar Wallpaper
 
 on:
   schedule:
-    - cron: "0 5 * * 1"  # ogni lunedì alle 05:00 UTC
+    - cron: "0 5 * * 1"
   workflow_dispatch: {}
 
 permissions:
